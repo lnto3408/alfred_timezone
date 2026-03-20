@@ -43,8 +43,8 @@ def show_times(time_str=None):
 
     # Header: local time
     items.append(make_item(
-        f"🏠 {source_fmt} {source_tz_name} (Local)",
-        f"Your local time",
+        f"{source_fmt} {source_tz_name}",
+        f"Local time",
         arg=f"{source_fmt} {source_tz_name}",
     ))
 

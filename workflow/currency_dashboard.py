@@ -67,8 +67,8 @@ def show_rates(amount_str=None):
 
     # Header: local currency
     items.append(make_item(
-        f"🏠 {amount_formatted} {local_curr}",
-        f"Base: {_currency_name(local_curr)}{stale_note}",
+        f"{amount_formatted} {local_curr}",
+        f"{_currency_name(local_curr)}  (base){stale_note}",
         arg=f"{amount_formatted} {local_curr}",
     ))
 
