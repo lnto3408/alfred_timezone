@@ -30,6 +30,8 @@ chmod +x build.sh
 
 Open Alfred and type `c` followed by a space, then your conversion query.
 
+> **Tip:** The keyword `c` is just the default. You can change it to anything you like — see [Changing the keyword](#changing-the-keyword) below.
+
 ### Timezone
 
 | Input | Output |
@@ -57,6 +59,14 @@ Open Alfred and type `c` followed by a space, then your conversion query.
 - Exchange rates from [open.er-api.com](https://open.er-api.com) — free, no API key needed
 - Rates cached locally for 1 hour at `~/.cache/alfred_converter/`
 - Stale cache used as fallback when offline
+
+## Changing the keyword
+
+1. Open **Alfred Preferences** → **Workflows**
+2. Select **Universal Converter**
+3. Double-click the **Script Filter** block (the leftmost block)
+4. Change the **Keyword** field to whatever you prefer (e.g., `cv`, `=`, `conv`)
+5. Close the dialog — changes are saved automatically
 
 ## Project structure
 
