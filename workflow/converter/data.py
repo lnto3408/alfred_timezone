@@ -6,6 +6,28 @@ Each location entry maps:
 Lookup indexes are built at import time for fast searching.
 """
 
+
+def country_flag(cc):
+    """Convert 2-letter country code to emoji flag. e.g., 'US' → '🇺🇸'."""
+    if not cc or len(cc) != 2:
+        return ""
+    # EU flag for European Union
+    if cc.upper() == "EU":
+        return "🇪🇺"
+    return "".join(chr(0x1F1E6 + ord(c) - ord("A")) for c in cc.upper())
+
+
+def currency_flag(code):
+    """Get flag for a currency code. Handles multi-country currencies like EUR."""
+    _CURRENCY_FLAGS = {"EUR": "EU", "XAF": "CM", "XOF": "SN"}
+    override = _CURRENCY_FLAGS.get(code.upper())
+    if override:
+        return country_flag(override)
+    loc = _IDX.get("currency", {}).get(code.upper())
+    if loc:
+        return country_flag(loc.get("cc", ""))
+    return ""
+
 # ─────────────────────────────────────────────────────────────
 # Location records
 # ─────────────────────────────────────────────────────────────

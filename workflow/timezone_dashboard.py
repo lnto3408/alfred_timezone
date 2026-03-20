@@ -6,13 +6,12 @@ Supports:
   ct 10am                → dashboard with specific time
   ct +1 / ct -3          → current time +/- hours (arithmetic)
   ct 10am -7             → 10am minus 7 hours
-  ct 10am +3:30          → 10am plus 3h30m
   ct utc+3 / ct gmt-6    → show local → that tz + favorites
   ct 10am utc+7          → 10am at UTC+7, show as local + favorites
   ct 12pm to pdt         → single conversion
-  ct 12pm to utc+9       → single conversion to offset
   ct add tokyo           → add to favorites
   ct remove tokyo        → remove from favorites
+  ct format              → choose clipboard time format
 """
 import os
 import re
@@ -23,7 +22,7 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from converter.alfred import output, make_item, make_error
-from converter.data import resolve_location, search_locations, LOCATIONS, _IDX
+from converter.data import resolve_location, search_locations, LOCATIONS, _IDX, country_flag
 from converter import favorites
 from converter.timezone import (
     parse_time, get_local_tz, convert as tz_convert,
@@ -39,7 +38,6 @@ TIME_RE = re.compile(
 
 
 def _offset_label(dt):
-    """UTC offset label like 'UTC+9'."""
     off = dt.utcoffset()
     if off is None:
         return ""
@@ -47,7 +45,6 @@ def _offset_label(dt):
 
 
 def _diff_label(source_dt, target_dt):
-    """Hour difference between two datetimes."""
     src_off = source_dt.utcoffset() or timedelta(0)
     tgt_off = target_dt.utcoffset() or timedelta(0)
     total_minutes = int((tgt_off - src_off).total_seconds()) // 60
@@ -62,22 +59,35 @@ def _diff_label(source_dt, target_dt):
 
 
 def _fmt(dt):
-    """Format datetime as '3:04 PM'."""
     return dt.strftime("%-I:%M %p")
 
 
-def _tz_name(dt, label=None):
-    """Get tz display name."""
-    return label or dt.strftime("%Z")
+def _copy_fmt(dt):
+    """Format for clipboard using user's chosen format."""
+    fmt = favorites.get_time_format()
+    return dt.strftime(fmt)
+
+
+def _flag(loc):
+    """Get flag emoji for a location."""
+    if not loc:
+        return ""
+    return country_flag(loc.get("cc", ""))
+
+
+def _loc_label(loc, dt):
+    """Build subtitle with flag, city, country, offset, diff."""
+    flag = _flag(loc)
+    return f"{flag}  {loc['city']}, {loc['country']}  ·  {_offset_label(dt)}"
+
+
+def _loc_label_diff(loc, dt, base_dt):
+    flag = _flag(loc)
+    diff = _diff_label(base_dt, dt)
+    return f"{flag}  {loc['city']}, {loc['country']}  ·  {_offset_label(dt)}  ·  {diff}"
 
 
 def show_dashboard(time_str=None, ref_tz=None, ref_label=None):
-    """Show time across all favorite timezones.
-
-    - No ref_tz: local time as base
-    - ref_tz set + time_str: that time IS in ref_tz → convert to local + favs
-    - ref_tz set + no time_str: show current local → ref_tz + favs
-    """
     favs = favorites.load()
     if not favs:
         output([make_item(
@@ -91,7 +101,6 @@ def show_dashboard(time_str=None, ref_tz=None, ref_label=None):
     items = []
 
     if ref_tz and time_str:
-        # "ct 10am utc+7" → 10am IS at ref_tz, convert to local
         parsed = parse_time(time_str)
         if not parsed:
             output([make_error(f"Cannot parse time: {time_str}")])
@@ -101,29 +110,25 @@ def show_dashboard(time_str=None, ref_tz=None, ref_label=None):
         local_dt = source_dt.astimezone(local_tz)
         date_note = format_date_diff(source_dt, local_dt)
 
-        # Header: base (input) → local
         items.append(make_item(
             f"{_fmt(source_dt)} {ref_label}  →  {_fmt(local_dt)} {local_dt.strftime('%Z')}{date_note}",
             f"{ref_label} → Local ({_offset_label(local_dt)})",
-            arg=f"{_fmt(local_dt)} {local_dt.strftime('%Z')}",
+            arg=_copy_fmt(local_dt),
         ))
         base_dt = source_dt
 
     elif ref_tz and not time_str:
-        # "ct utc+3" → show current local → ref_tz
         target_dt = now.astimezone(ref_tz)
         date_note = format_date_diff(now, target_dt)
 
-        # Header: local (base) → ref_tz (target)
         items.append(make_item(
             f"{_fmt(now)} {now.strftime('%Z')}  →  {_fmt(target_dt)} {ref_label}{date_note}",
             f"Local ({_offset_label(now)}) → {ref_label}",
-            arg=f"{_fmt(target_dt)} {ref_label}",
+            arg=_copy_fmt(target_dt),
         ))
         base_dt = now
 
     else:
-        # "ct" or "ct 10am" → local time base
         if time_str:
             parsed = parse_time(time_str)
             if not parsed:
@@ -138,12 +143,9 @@ def show_dashboard(time_str=None, ref_tz=None, ref_label=None):
         items.append(make_item(
             f"{_fmt(base_dt)} {base_dt.strftime('%Z')}",
             f"Local ({_offset_label(base_dt)})  ·  {_fmt(utc_dt)} UTC",
-            arg=f"{_fmt(base_dt)} {base_dt.strftime('%Z')}",
+            arg=_copy_fmt(base_dt),
         ))
 
-    # Favorites
-    # For ref_tz cases (ct 10am utc+7, ct utc+3): show local time → fav tz time
-    # For plain cases (ct, ct 10am): show base time → fav tz time
     local_base = now if not time_str else base_dt
     for iana in favs:
         loc = _IDX["iana"].get(iana)
@@ -153,32 +155,25 @@ def show_dashboard(time_str=None, ref_tz=None, ref_label=None):
         tz = ZoneInfo(iana)
         target_dt = base_dt.astimezone(tz)
         date_note = format_date_diff(base_dt, target_dt)
-        diff = _diff_label(base_dt, target_dt)
 
         if ref_tz:
-            # Show "local time in that tz" → "converted time in that tz"
-            # base_dt is the ref_tz time, show what it equals in this fav tz
             local_in_fav = local_base.astimezone(tz)
             items.append(make_item(
-                f"{_fmt(local_in_fav)} {local_in_fav.strftime('%Z')}  →  {_fmt(target_dt)} {target_dt.strftime('%Z')}{date_note}",
-                f"{loc['city']}, {loc['country']}  ·  {_offset_label(target_dt)}  ·  {diff}",
-                arg=f"{_fmt(target_dt)} {target_dt.strftime('%Z')}",
+                f"{_flag(loc)}  {_fmt(local_in_fav)} {local_in_fav.strftime('%Z')}  →  {_fmt(target_dt)} {target_dt.strftime('%Z')}{date_note}",
+                _loc_label_diff(loc, target_dt, base_dt),
+                arg=_copy_fmt(target_dt),
             ))
         else:
             items.append(make_item(
-                f"{_fmt(target_dt)} {target_dt.strftime('%Z')}{date_note}",
-                f"{loc['city']}, {loc['country']}  ·  {_offset_label(target_dt)}  ·  {diff}",
-                arg=f"{_fmt(target_dt)} {target_dt.strftime('%Z')}",
+                f"{_flag(loc)}  {_fmt(target_dt)} {target_dt.strftime('%Z')}{date_note}",
+                _loc_label_diff(loc, target_dt, base_dt),
+                arg=_copy_fmt(target_dt),
             ))
 
     output(items)
 
 
 def show_time_arithmetic(time_str, offset_str):
-    """Handle 'ct 10am -7', 'ct +3', 'ct -1' — time arithmetic.
-
-    If time_str is None, use current time.
-    """
     local_tz = get_local_tz()
     now = datetime.now(tz=local_tz)
 
@@ -198,34 +193,73 @@ def show_time_arithmetic(time_str, offset_str):
     td, label = result
     target_dt = source_dt + td
     date_note = format_date_diff(source_dt, target_dt)
-
     source_tz_name = source_dt.strftime("%Z")
 
-    # Header: base (left) → result (right)
     items = [make_item(
         f"{_fmt(source_dt)} {source_tz_name}  →  {_fmt(target_dt)} {source_tz_name}{date_note}",
         f"Local ({label}){date_note}",
-        arg=f"{_fmt(target_dt)}",
+        arg=_copy_fmt(target_dt),
     )]
 
-    # Favorites: show original time → shifted time in each tz
     favs = favorites.load()
     for iana in favs:
         loc = _IDX["iana"].get(iana)
         if not loc:
             continue
         tz = ZoneInfo(iana)
-        # Original time in this tz
         orig_fav_dt = source_dt.astimezone(tz)
-        # Shifted time in this tz
         shifted_fav_dt = target_dt.astimezone(tz)
         fav_date = format_date_diff(orig_fav_dt, shifted_fav_dt)
 
         items.append(make_item(
-            f"{_fmt(orig_fav_dt)} {orig_fav_dt.strftime('%Z')}  →  {_fmt(shifted_fav_dt)} {shifted_fav_dt.strftime('%Z')}{fav_date}",
-            f"{loc['city']}, {loc['country']}  ·  {_offset_label(shifted_fav_dt)}",
-            arg=f"{_fmt(shifted_fav_dt)} {shifted_fav_dt.strftime('%Z')}",
+            f"{_flag(loc)}  {_fmt(orig_fav_dt)} {orig_fav_dt.strftime('%Z')}  →  {_fmt(shifted_fav_dt)} {shifted_fav_dt.strftime('%Z')}{fav_date}",
+            _loc_label(loc, shifted_fav_dt),
+            arg=_copy_fmt(shifted_fav_dt),
         ))
+
+    output(items)
+
+
+def handle_format(search_query):
+    """Show time format options."""
+    current_id = favorites.get_time_format_id()
+    items = []
+
+    for preset in favorites.TIME_FORMATS:
+        is_current = preset["id"] == current_id
+        marker = "  ✓" if is_current else ""
+        items.append(make_item(
+            f"{preset['label']}{marker}",
+            f"Format: {preset['fmt']}  — Press Enter to select",
+            arg=f"__format__{preset['id']}",
+            valid=not is_current,
+        ))
+
+    # Custom option
+    is_custom = current_id == "custom"
+    custom_fmt = favorites.get_time_format() if is_custom else ""
+    marker = "  ✓" if is_custom else ""
+    hint = f"Current: {custom_fmt}" if is_custom else "e.g., ct format custom %Y/%m/%d %H:%M %Z"
+    items.append(make_item(
+        f"Custom strftime format{marker}",
+        hint,
+        arg="__format__custom",
+        valid=False,
+    ))
+
+    # Handle "ct format custom <fmt>"
+    if search_query and search_query.lower().startswith("custom"):
+        custom = search_query[6:].strip()
+        if custom:
+            try:
+                preview = datetime.now().strftime(custom)
+                items = [make_item(
+                    f"Preview: {preview}",
+                    f"Format: {custom}  — Press Enter to set",
+                    arg=f"__format_custom__{custom}",
+                )]
+            except Exception:
+                items = [make_error(f"Invalid format: {custom}")]
 
     output(items)
 
@@ -249,7 +283,8 @@ def handle_add(search_query):
         iana = loc["iana"]
         already = iana in current_favs
         tz_abbrs = "/".join(loc["tz_abbrs"])
-        title = f"{loc['city']}, {loc['country']} ({tz_abbrs})"
+        flag = _flag(loc)
+        title = f"{flag}  {loc['city']}, {loc['country']} ({tz_abbrs})"
         if already:
             items.append(make_item(title, "Already added", arg=f"__noop__{iana}", valid=False))
         else:
@@ -271,8 +306,9 @@ def handle_remove(search_query):
         if search_query and search_query.lower() not in f"{loc['city']} {loc['country']} {' '.join(loc['tz_abbrs'])}".lower():
             continue
         tz_abbrs = "/".join(loc["tz_abbrs"])
+        flag = _flag(loc)
         items.append(make_item(
-            f"{loc['city']}, {loc['country']} ({tz_abbrs})",
+            f"{flag}  {loc['city']}, {loc['country']} ({tz_abbrs})",
             "Press Enter to remove",
             arg=f"__remove__{iana}",
         ))
@@ -286,11 +322,14 @@ def main():
     query = sys.argv[1] if len(sys.argv) > 1 else ""
     query = query.strip()
 
-    # ct → dashboard
     if not query:
         show_dashboard()
 
     lower = query.lower()
+
+    # ct format [custom <fmt>]
+    if lower.startswith("format"):
+        handle_format(query[6:].strip())
 
     # ct add / ct remove
     if lower.startswith("add"):
@@ -299,7 +338,7 @@ def main():
         search = re.sub(r'^(remove|rm)\s*', '', query, flags=re.IGNORECASE).strip()
         handle_remove(search)
 
-    # ct 12pm to pdt / ct 12pm to utc+9 → single conversion
+    # ct 12pm to pdt / ct 12pm to utc+9
     if " to " in lower or " in " in lower:
         parsed = parse(query)
         if isinstance(parsed, TimezoneQuery):
@@ -308,11 +347,11 @@ def main():
 
     parts = query.split()
 
-    # ct +1 / ct -3 → current time arithmetic (bare offset, no time)
+    # ct +1 / ct -3
     if len(parts) == 1 and BARE_OFFSET_RE.match(parts[0]):
         show_time_arithmetic(None, parts[0])
 
-    # ct utc / ct utc+3 / ct gmt-6 → show local → that tz
+    # ct utc / ct utc+3 / ct gmt-6
     if len(parts) == 1 and OFFSET_RE.match(parts[0]):
         result = resolve_offset_tz(parts[0])
         if result:
@@ -324,30 +363,25 @@ def main():
         modifier = " ".join(parts[1:])
 
         if TIME_RE.match(time_part):
-            # ct 10am -7 / ct 10am +3:30 → time arithmetic
             if BARE_OFFSET_RE.match(modifier):
                 show_time_arithmetic(time_part, modifier)
 
-            # ct 10am utc+7 / ct 10am gmt+1 → time at that tz
             if OFFSET_RE.match(modifier):
                 result = resolve_offset_tz(modifier)
                 if result:
                     ref_tz, ref_label = result
                     show_dashboard(time_part, ref_tz=ref_tz, ref_label=ref_label)
 
-            # ct 10am pdt / ct 10am tokyo → time at that tz
             tz, label = resolve_tz(modifier)
             if tz:
                 show_dashboard(time_part, ref_tz=tz, ref_label=label or modifier.upper())
 
-    # ct 10am → dashboard with time
     if TIME_RE.match(query):
         show_dashboard(query)
 
-    # Fallback
     output([make_item(
         "ct — Timezone",
-        "ct | ct +1 | ct 10am | ct utc+7 | ct 10am -7 | ct 12pm to pdt",
+        "ct | ct +1 | ct 10am | ct utc+7 | ct 12pm to pdt | ct format",
         valid=False
     )])
 

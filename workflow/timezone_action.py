@@ -24,5 +24,15 @@ def main():
         else:
             print(f"{iana} not in favorites")
 
+    elif arg.startswith("__format__"):
+        fmt_id = arg[10:]
+        favorites.set_time_format(fmt_id)
+        print(f"Format set to {fmt_id}")
+
+    elif arg.startswith("__format_custom__"):
+        custom = arg[17:]
+        favorites.set_custom_time_format(custom)
+        print(f"Custom format set: {custom}")
+
 if __name__ == "__main__":
     main()

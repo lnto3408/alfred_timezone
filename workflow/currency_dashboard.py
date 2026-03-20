@@ -7,7 +7,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from converter.alfred import output, make_item, make_error
-from converter.data import resolve_location, search_locations, CURRENCIES, _IDX, ZERO_DECIMAL_CURRENCIES
+from converter.data import resolve_location, search_locations, CURRENCIES, _IDX, ZERO_DECIMAL_CURRENCIES, country_flag, currency_flag
 from converter import favorites
 from converter.currency import get_rates, format_amount, convert as curr_convert
 from converter.parser import parse, CurrencyQuery
@@ -82,7 +82,8 @@ def show_rates(amount_str=None):
         result = amount * rate
         result_formatted = format_amount(result, code)
 
-        title = f"{result_formatted} {code}"
+        flag = currency_flag(code)
+        title = f"{flag}  {result_formatted} {code}"
         rate_str = f"{rate:.6g}" if rate < 1 else format_amount(rate, code)
         subtitle = f"{_currency_name(code)}  ·  1 {local_curr} = {rate_str} {code}"
 
