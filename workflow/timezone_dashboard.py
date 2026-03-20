@@ -154,13 +154,11 @@ def show_dashboard(time_str=None, ref_tz=None, ref_label=None):
         flag = _flag(loc)
 
         if ref_tz and not time_str:
-            # ct utc+5: show each tz's current time → what that is in ref_tz
+            # ct utc+5: just show each tz's current time
             fav_now = now.astimezone(tz)
-            fav_in_ref = now.astimezone(ref_tz)
-            date_note = format_date_diff(fav_now, fav_in_ref)
             diff = _diff_label(now, fav_now)
             items.append(make_item(
-                f"{flag}  {_fmt(fav_now)} {fav_now.strftime('%Z')}  →  {_fmt(fav_in_ref)} {ref_label}{date_note}",
+                f"{flag}  {_fmt(fav_now)} {fav_now.strftime('%Z')}",
                 _loc_sub_diff(loc, fav_now, base_dt),
                 arg=_copy_fmt(fav_now),
             ))
