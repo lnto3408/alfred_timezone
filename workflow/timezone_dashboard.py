@@ -75,16 +75,15 @@ def _flag(loc):
     return country_flag(loc.get("cc", ""))
 
 
-def _loc_label(loc, dt):
-    """Build subtitle with flag, city, country, offset, diff."""
-    flag = _flag(loc)
-    return f"{flag}  {loc['city']}, {loc['country']}  ·  {_offset_label(dt)}"
+def _loc_sub(loc, dt):
+    """Subtitle: city, country, offset."""
+    return f"{loc['city']}, {loc['country']}  ·  {_offset_label(dt)}"
 
 
-def _loc_label_diff(loc, dt, base_dt):
-    flag = _flag(loc)
+def _loc_sub_diff(loc, dt, base_dt):
+    """Subtitle: city, country, offset, diff."""
     diff = _diff_label(base_dt, dt)
-    return f"{flag}  {loc['city']}, {loc['country']}  ·  {_offset_label(dt)}  ·  {diff}"
+    return f"{loc['city']}, {loc['country']}  ·  {_offset_label(dt)}  ·  {diff}"
 
 
 def show_dashboard(time_str=None, ref_tz=None, ref_label=None):
@@ -146,27 +145,41 @@ def show_dashboard(time_str=None, ref_tz=None, ref_label=None):
             arg=_copy_fmt(base_dt),
         ))
 
-    local_base = now if not time_str else base_dt
     for iana in favs:
         loc = _IDX["iana"].get(iana)
         if not loc:
             continue
 
         tz = ZoneInfo(iana)
-        target_dt = base_dt.astimezone(tz)
-        date_note = format_date_diff(base_dt, target_dt)
+        flag = _flag(loc)
 
-        if ref_tz:
-            local_in_fav = local_base.astimezone(tz)
+        if ref_tz and not time_str:
+            # ct utc+5: show each tz's current time → what that is in ref_tz
+            fav_now = now.astimezone(tz)
+            fav_in_ref = now.astimezone(ref_tz)
+            date_note = format_date_diff(fav_now, fav_in_ref)
+            diff = _diff_label(now, fav_now)
             items.append(make_item(
-                f"{_flag(loc)}  {_fmt(local_in_fav)} {local_in_fav.strftime('%Z')}  →  {_fmt(target_dt)} {target_dt.strftime('%Z')}{date_note}",
-                _loc_label_diff(loc, target_dt, base_dt),
+                f"{flag}  {_fmt(fav_now)} {fav_now.strftime('%Z')}  →  {_fmt(fav_in_ref)} {ref_label}{date_note}",
+                _loc_sub_diff(loc, fav_now, base_dt),
+                arg=_copy_fmt(fav_now),
+            ))
+        elif ref_tz and time_str:
+            # ct 10am utc+7: show converted time in each fav tz
+            target_dt = base_dt.astimezone(tz)
+            date_note = format_date_diff(base_dt, target_dt)
+            items.append(make_item(
+                f"{flag}  {_fmt(target_dt)} {target_dt.strftime('%Z')}{date_note}",
+                _loc_sub_diff(loc, target_dt, base_dt),
                 arg=_copy_fmt(target_dt),
             ))
         else:
+            # ct / ct 10am: show time in each fav tz
+            target_dt = base_dt.astimezone(tz)
+            date_note = format_date_diff(base_dt, target_dt)
             items.append(make_item(
-                f"{_flag(loc)}  {_fmt(target_dt)} {target_dt.strftime('%Z')}{date_note}",
-                _loc_label_diff(loc, target_dt, base_dt),
+                f"{flag}  {_fmt(target_dt)} {target_dt.strftime('%Z')}{date_note}",
+                _loc_sub_diff(loc, target_dt, base_dt),
                 arg=_copy_fmt(target_dt),
             ))
 
@@ -213,7 +226,7 @@ def show_time_arithmetic(time_str, offset_str):
 
         items.append(make_item(
             f"{_flag(loc)}  {_fmt(orig_fav_dt)} {orig_fav_dt.strftime('%Z')}  →  {_fmt(shifted_fav_dt)} {shifted_fav_dt.strftime('%Z')}{fav_date}",
-            _loc_label(loc, shifted_fav_dt),
+            _loc_sub(loc, shifted_fav_dt),
             arg=_copy_fmt(shifted_fav_dt),
         ))
 
