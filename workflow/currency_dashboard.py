@@ -53,7 +53,9 @@ def show_rates(amount_str=None):
         except ValueError:
             output([make_error(f"Invalid amount: {amount_str}")])
     else:
-        amount = 1.0
+        # Default to a meaningful amount based on currency magnitude
+        high_unit = {"KRW", "JPY", "VND", "IDR", "CLP", "COP", "HUF"}
+        amount = 10000.0 if local_curr in high_unit else 100.0
 
     rates, is_stale = get_rates(local_curr)
     if rates is None:
