@@ -86,7 +86,15 @@ def _loc_sub_diff(loc, dt, base_dt):
     return f"{loc['city']}, {loc['country']}  ·  {_offset_label(dt)}  ·  {diff}"
 
 
-def show_dashboard(time_str=None, ref_tz=None, ref_label=None):
+def show_dashboard(time_str=None, ref_tz=None, ref_label=None, source_datetime=None):
+    """Show timezone dashboard.
+
+    Args:
+        time_str: simple time like '10am'
+        ref_tz: reference timezone for the time
+        ref_label: display label for ref_tz
+        source_datetime: a full datetime object (from log timestamps)
+    """
     favs = favorites.load()
     if not favs:
         output([make_item(
@@ -98,6 +106,33 @@ def show_dashboard(time_str=None, ref_tz=None, ref_label=None):
     local_tz = get_local_tz()
     now = datetime.now(tz=local_tz)
     items = []
+
+    # Full datetime from log timestamp
+    if source_datetime:
+        base_dt = source_datetime
+        local_dt = base_dt.astimezone(local_tz)
+        src_tz_label = base_dt.strftime("%Z") or _offset_label(base_dt)
+
+        items.append(make_item(
+            f"{base_dt.strftime('%Y-%m-%d %-I:%M %p')} {src_tz_label}  →  {_fmt(local_dt)} {local_dt.strftime('%Z')}",
+            f"Parsed timestamp → Local ({_offset_label(local_dt)})",
+            arg=_copy_fmt(local_dt),
+        ))
+
+        for iana in favs:
+            loc = _IDX["iana"].get(iana)
+            if not loc:
+                continue
+            tz = ZoneInfo(iana)
+            target_dt = base_dt.astimezone(tz)
+            date_note = format_date_diff(base_dt, target_dt)
+            items.append(make_item(
+                f"{_flag(loc)}  {_fmt(target_dt)} {target_dt.strftime('%Z')}  ({target_dt.strftime('%b %-d')}){date_note}",
+                _loc_sub_diff(loc, target_dt, local_dt),
+                arg=_copy_fmt(target_dt),
+            ))
+
+        output(items)
 
     if ref_tz and time_str:
         parsed = parse_time(time_str)
@@ -349,8 +384,9 @@ def main():
         search = re.sub(r'^(remove|rm)\s*', '', query, flags=re.IGNORECASE).strip()
         handle_remove(search)
 
-    # ct 12pm to pdt / ct 12pm to utc+9
+    # ct <timestamp> to pdt / ct 12pm to utc+9
     if " to " in lower or " in " in lower:
+        # Try parser (handles both simple time and timestamps)
         parsed = parse(query)
         if isinstance(parsed, TimezoneQuery):
             items = tz_convert(parsed.time_str, parsed.to_tz, parsed.from_tz)
@@ -390,9 +426,16 @@ def main():
     if TIME_RE.match(query):
         show_dashboard(query)
 
+    # Try parsing as full datetime/timestamp (log formats, unix timestamp, ISO)
+    from converter.timezone import parse_datetime
+    dt_result = parse_datetime(query)
+    if dt_result:
+        dt, _ = dt_result
+        show_dashboard(source_datetime=dt)
+
     output([make_item(
         "ct — Timezone",
-        "ct | ct +1 | ct 10am | ct utc+7 | ct 12pm to pdt | ct format",
+        "ct | ct +1 | ct 10am | ct utc+7 | ct 12pm to pdt | ct 2026-03-07T07:49:58",
         valid=False
     )])
 

@@ -3,7 +3,7 @@ import re
 from collections import namedtuple
 
 from converter.data import resolve_location, _IDX
-from converter.timezone import resolve_offset_tz, OFFSET_RE
+from converter.timezone import resolve_offset_tz, OFFSET_RE, parse_datetime
 
 TimezoneQuery = namedtuple("TimezoneQuery", ["time_str", "from_tz", "to_tz"])
 CurrencyQuery = namedtuple("CurrencyQuery", ["amount", "from_curr", "to_curr"])
@@ -68,6 +68,11 @@ def _try_timezone(left, right):
         time_part, tz_part = left_parts
         if TIME_PATTERN.match(time_part) and _is_tz(tz_part):
             return TimezoneQuery(time_str=time_part, from_tz=tz_part, to_tz=right)
+
+    # "2026-03-07T07:49:58.720 to pdt" — full timestamp
+    dt_result = parse_datetime(left)
+    if dt_result:
+        return TimezoneQuery(time_str=left, from_tz=None, to_tz=right)
 
     return None
 
