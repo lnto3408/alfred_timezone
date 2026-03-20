@@ -25,7 +25,7 @@
 	<key>createdby</key>
 	<string></string>
 	<key>description</key>
-	<string>Convert timezones and currencies inline. Just type: 12pm to pdt | 1000 krw to usd</string>
+	<string>Convert timezones and currencies. Type: c 12pm to pdt | c 1000 krw to usd</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
@@ -48,7 +48,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>keyword</key>
-				<string></string>
+				<string>c</string>
 				<key>queuedelaycustom</key>
 				<integer>3</integer>
 				<key>queuedelayimmediatelyalinitially</key>
@@ -100,18 +100,18 @@
 	<key>readme</key>
 	<string>Universal Converter for Alfred
 
-No keyword needed! Just type directly in Alfred:
+Keyword: c
 
 Timezone conversion:
-  12pm to pdt
-  3:30pm to est
-  9am kst to pdt
-  15:00 to tokyo
+  c 12pm to pdt
+  c 3:30pm to est
+  c 9am kst to pdt
+  c 15:00 to tokyo
 
 Currency conversion:
-  1000 krw to usd
-  50 eur to jpy
-  100 usd to gbp
+  c 1000 krw to usd
+  c 50 eur to jpy
+  c 100 usd to gbp
 
 Press Enter to copy the result to clipboard.</string>
 	<key>uidata</key>

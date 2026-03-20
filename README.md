@@ -1,6 +1,6 @@
 # Universal Converter for Alfred
 
-Raycast-style inline converter for Alfred. No keyword needed — just type directly in Alfred's search bar and get instant results.
+Instant timezone & currency converter for Alfred. Type `c` followed by your query and get real-time results as you type.
 
 ![timezone](https://img.shields.io/badge/timezone-DST%20aware-blue)
 ![currency](https://img.shields.io/badge/currency-160%2B%20codes-green)
@@ -8,15 +8,15 @@ Raycast-style inline converter for Alfred. No keyword needed — just type direc
 
 ## Features
 
-- **No keyword prefix** — results appear inline alongside Alfred's default results
 - **Timezone conversion** with automatic DST handling
 - **Currency conversion** with real-time exchange rates (cached 1 hour)
-- **Zero dependencies** — Python 3.9+ standard library only, no `pip install` needed
+- **Instant results** — no Enter needed, results update as you type
+- **Zero dependencies** — Python 3.9+ standard library only, no `pip install`
 - **Clipboard copy** — press Enter to copy the result
 
 ## Install
 
-Download the latest `.alfredworkflow` from [Releases](https://github.com/lnto3408/alfred_timezone/releases), then double-click to install.
+Download `Universal-Converter.alfredworkflow` from [Releases](https://github.com/lnto3408/alfred_timezone/releases) and double-click to install.
 
 Or build from source:
 
@@ -28,19 +28,19 @@ chmod +x build.sh
 
 ## Usage
 
-### Timezone
+Open Alfred and type `c` followed by a space, then your conversion query.
 
-Type directly in Alfred:
+### Timezone
 
 | Input | Output |
 |---|---|
-| `12pm to pdt` | 8:00 PM PDT (previous day) |
-| `3:30pm to est` | 2:30 AM EDT |
-| `9am kst to pdt` | 5:00 PM PDT (previous day) |
-| `15:00 to tokyo` | 3:00 PM JST |
-| `12pm to utc` | 3:00 AM UTC |
+| `c 12pm to pdt` | 8:00 PM PDT (previous day) |
+| `c 3:30pm to est` | 2:30 AM EDT |
+| `c 9am kst to pdt` | 5:00 PM PDT (previous day) |
+| `c 15:00 to tokyo` | 3:00 PM JST |
+| `c 12pm to utc` | 3:00 AM UTC |
 
-- Source timezone defaults to your system's local timezone if omitted
+- Source timezone defaults to your **system's local timezone** if omitted
 - Supports abbreviations: `PST`, `PDT`, `EST`, `EDT`, `CST`, `CDT`, `JST`, `KST`, `GMT`, `UTC`, `CET`, `IST`, `AEST`, etc.
 - Supports city names: `tokyo`, `london`, `nyc`, `sf`, `seoul`, `sydney`, `paris`, `dubai`, etc.
 - Time formats: `12pm`, `3:30pm`, `15:00`, `0930`
@@ -49,18 +49,14 @@ Type directly in Alfred:
 
 | Input | Output |
 |---|---|
-| `1000 krw to usd` | 0.67 USD |
-| `50 eur to jpy` | 9,135 JPY |
-| `100 usd to gbp` | 79.42 GBP |
+| `c 1000 krw to usd` | 0.67 USD |
+| `c 50 eur to jpy` | 9,135 JPY |
+| `c 100 usd to gbp` | 79.42 GBP |
 
 - 160+ currency codes supported (ISO 4217)
-- Exchange rates from [open.er-api.com](https://open.er-api.com) — free, no API key
+- Exchange rates from [open.er-api.com](https://open.er-api.com) — free, no API key needed
 - Rates cached locally for 1 hour at `~/.cache/alfred_converter/`
 - Stale cache used as fallback when offline
-
-## How it works
-
-This workflow uses Alfred's **Script Filter** with an empty keyword, so it runs on every query. When the input doesn't match a conversion pattern (e.g. `<time> to <timezone>` or `<amount> <currency> to <currency>`), it returns empty results and doesn't interfere with other workflows or Alfred's default search.
 
 ## Project structure
 
