@@ -3,7 +3,6 @@
 import os
 import sys
 
-# Ensure the script's directory is in the path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from converter.parser import parse, TimezoneQuery, CurrencyQuery
@@ -19,14 +18,12 @@ def main():
     if not query:
         output([])
 
-    # No "to"/"in" keyword yet — not a conversion query, skip silently
     if " to " not in query.lower() and " in " not in query.lower():
         output([])
 
     parsed = parse(query)
 
     if parsed is None:
-        # Doesn't match our patterns — don't show anything
         output([])
 
     if isinstance(parsed, TimezoneQuery):

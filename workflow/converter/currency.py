@@ -8,8 +8,7 @@ import urllib.error
 CACHE_DIR = os.path.expanduser("~/.cache/alfred_converter")
 CACHE_TTL = 3600  # 1 hour
 
-# Currencies with 0 decimal places
-ZERO_DECIMAL = {"JPY", "KRW", "VND", "IDR", "CLP", "ISK", "HUF"}
+from converter.data import ZERO_DECIMAL_CURRENCIES as ZERO_DECIMAL
 
 API_URL = "https://open.er-api.com/v6/latest/{base}"
 

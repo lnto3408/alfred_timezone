@@ -21,11 +21,24 @@
 				<false/>
 			</dict>
 		</array>
+		<key>C88C3884-B1FD-4360-AF60-82D5A79F65B9</key>
+		<array>
+			<dict>
+				<key>destinationuid</key>
+				<string>72BDDAF2-1CDB-4A1E-98AD-49CED1A7C1CF</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+		</array>
 	</dict>
 	<key>createdby</key>
 	<string></string>
 	<key>description</key>
-	<string>Convert timezones and currencies. Type: c 12pm to pdt | c 1000 krw to usd</string>
+	<string>Timezone dashboard &amp; converter. c 12pm to pdt | ct 10am | ct add tokyo | 1000 krw to usd</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
@@ -60,9 +73,9 @@
 				<key>runningsubtext</key>
 				<string>Converting...</string>
 				<key>script</key>
-				<string>python3 main.py "{query}"</string>
+				<string>/usr/bin/python3 main.py "{query}"</string>
 				<key>scriptargtype</key>
-				<integer>1</integer>
+				<integer>0</integer>
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
@@ -96,24 +109,97 @@
 			<key>version</key>
 			<integer>3</integer>
 		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>alfredfiltersresults</key>
+				<false/>
+				<key>alfredfiltersresultsmatchmode</key>
+				<integer>0</integer>
+				<key>argumenttreatemptyqueryasnil</key>
+				<false/>
+				<key>argumenttrimmode</key>
+				<integer>0</integer>
+				<key>argumenttype</key>
+				<integer>0</integer>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>keyword</key>
+				<string>ct</string>
+				<key>queuedelaycustom</key>
+				<integer>3</integer>
+				<key>queuedelayimmediatelyalinitially</key>
+				<true/>
+				<key>queuedelaymode</key>
+				<integer>0</integer>
+				<key>queuemode</key>
+				<integer>1</integer>
+				<key>runningsubtext</key>
+				<string>Loading timezones...</string>
+				<key>script</key>
+				<string>/usr/bin/python3 ct.py "{query}"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>subtext</key>
+				<string>ct [time] | ct add [city] | ct remove [city]</string>
+				<key>title</key>
+				<string>Timezone Dashboard</string>
+				<key>type</key>
+				<integer>0</integer>
+				<key>withspace</key>
+				<true/>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.input.scriptfilter</string>
+			<key>uid</key>
+			<string>C88C3884-B1FD-4360-AF60-82D5A79F65B9</string>
+			<key>version</key>
+			<integer>3</integer>
+		</dict>
+		<dict>
+			<key>config</key>
+			<dict>
+				<key>concurrently</key>
+				<false/>
+				<key>escaping</key>
+				<integer>102</integer>
+				<key>script</key>
+				<string>/usr/bin/python3 ct_action.py "{query}"</string>
+				<key>scriptargtype</key>
+				<integer>0</integer>
+				<key>scriptfile</key>
+				<string></string>
+				<key>type</key>
+				<integer>0</integer>
+			</dict>
+			<key>type</key>
+			<string>alfred.workflow.action.script</string>
+			<key>uid</key>
+			<string>72BDDAF2-1CDB-4A1E-98AD-49CED1A7C1CF</string>
+			<key>version</key>
+			<integer>2</integer>
+		</dict>
 	</array>
 	<key>readme</key>
 	<string>Universal Converter for Alfred
 
-Keyword: c
+Keywords: c, ct
 
-Timezone conversion:
+Convert (c):
   c 12pm to pdt
-  c 3:30pm to est
-  c 9am kst to pdt
-  c 15:00 to tokyo
-
-Currency conversion:
+  c 3:30pm kst to est
   c 1000 krw to usd
   c 50 eur to jpy
-  c 100 usd to gbp
 
-Press Enter to copy the result to clipboard.</string>
+Timezone Dashboard (ct):
+  ct              — show current time in saved timezones
+  ct 10am         — show 10am converted to saved timezones
+  ct add tokyo    — add a timezone
+  ct remove tokyo — remove a timezone
+
+Press Enter to copy result or add/remove timezone.</string>
 	<key>uidata</key>
 	<dict>
 		<key>83AF2449-A489-4399-90CA-817A336C07CF</key>
@@ -130,9 +216,23 @@ Press Enter to copy the result to clipboard.</string>
 			<key>ypos</key>
 			<real>50</real>
 		</dict>
+		<key>C88C3884-B1FD-4360-AF60-82D5A79F65B9</key>
+		<dict>
+			<key>xpos</key>
+			<real>150</real>
+			<key>ypos</key>
+			<real>250</real>
+		</dict>
+		<key>72BDDAF2-1CDB-4A1E-98AD-49CED1A7C1CF</key>
+		<dict>
+			<key>xpos</key>
+			<real>450</real>
+			<key>ypos</key>
+			<real>250</real>
+		</dict>
 	</dict>
 	<key>version</key>
-	<string>1.0.0</string>
+	<string>2.0.0</string>
 	<key>webaddress</key>
 	<string></string>
 </dict>
