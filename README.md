@@ -160,11 +160,11 @@ Standard 3-letter ISO 4217 codes: `USD`, `EUR`, `GBP`, `JPY`, `KRW`, `CNY`, `CAD
 ```
 ├── workflow/               # Alfred workflow source
 │   ├── info.plist          # Alfred workflow manifest
-│   ├── main.py             # 'c' keyword — convert entry point
-│   ├── ct.py               # 'ct' keyword — timezone dashboard
-│   ├── ct_action.py        # Add/remove timezone action handler
-│   ├── cc.py               # 'cc' keyword — currency dashboard
-│   ├── cc_action.py        # Add/remove currency action handler
+│   ├── convert.py              # 'c' — quick conversion entry point
+│   ├── timezone_dashboard.py   # 'ct' — timezone dashboard
+│   ├── timezone_action.py      # ct add/remove handler
+│   ├── currency_dashboard.py   # 'cc' — currency dashboard
+│   ├── currency_action.py      # cc add/remove handler
 │   └── converter/
 │       ├── data.py         # Timezone/city/country/currency data table
 │       ├── alfred.py       # Alfred JSON output helpers

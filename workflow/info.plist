@@ -86,7 +86,7 @@
 				<key>runningsubtext</key>
 				<string>Converting...</string>
 				<key>script</key>
-				<string>/usr/bin/python3 main.py "{query}"</string>
+				<string>/usr/bin/python3 convert.py "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -150,7 +150,7 @@
 				<key>runningsubtext</key>
 				<string>Loading timezones...</string>
 				<key>script</key>
-				<string>/usr/bin/python3 ct.py "{query}"</string>
+				<string>/usr/bin/python3 timezone_dashboard.py "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -179,7 +179,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/bin/python3 ct_action.py "{query}"</string>
+				<string>/usr/bin/python3 timezone_action.py "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -222,7 +222,7 @@
 				<key>runningsubtext</key>
 				<string>Loading rates...</string>
 				<key>script</key>
-				<string>/usr/bin/python3 cc.py "{query}"</string>
+				<string>/usr/bin/python3 currency_dashboard.py "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
@@ -251,7 +251,7 @@
 				<key>escaping</key>
 				<integer>102</integer>
 				<key>script</key>
-				<string>/usr/bin/python3 cc_action.py "{query}"</string>
+				<string>/usr/bin/python3 currency_action.py "{query}"</string>
 				<key>scriptargtype</key>
 				<integer>0</integer>
 				<key>scriptfile</key>
