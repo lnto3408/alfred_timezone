@@ -26,7 +26,7 @@ chmod +x build.sh
 
 ## Usage
 
-Two keywords: **`c`** for quick conversions, **`ct`** for the timezone dashboard.
+Three keywords: **`c`** for quick conversions, **`ct`** for the timezone dashboard, **`cc`** for the currency dashboard.
 
 > **Tip:** Both keywords can be changed to anything you prefer — see [Customizing keywords](#customizing-keywords).
 
@@ -93,6 +93,34 @@ Saved timezones are stored at `~/.config/alfred_converter/favorites.json`.
 
 ---
 
+### `cc` — Currency Dashboard
+
+Save your frequently-used currencies and compare rates at a glance.
+
+#### View rates for saved currencies
+
+| Input | Result |
+|---|---|
+| `cc` | 1 unit of local currency → all saved currencies |
+| `cc 1000` | 1,000 local currency → all saved currencies |
+| `cc 50000` | 50,000 local currency → all saved currencies |
+
+Your **local currency is auto-detected** from your system timezone (e.g., KRW for Asia/Seoul).
+
+#### Add / remove currencies
+
+| Input | Result |
+|---|---|
+| `cc add usd` | Add US Dollar |
+| `cc add yen` | Search by alias → add JPY |
+| `cc add euro` | Search by name → add EUR |
+| `cc remove jpy` | Remove Japanese Yen |
+| `cc rm eur` | Remove Euro |
+
+Saved currencies are stored at `~/.config/alfred_converter/currencies.json`.
+
+---
+
 ### Supported formats
 
 #### Timezone identifiers
@@ -123,8 +151,8 @@ Standard 3-letter ISO 4217 codes: `USD`, `EUR`, `GBP`, `JPY`, `KRW`, `CNY`, `CAD
 
 1. Open **Alfred Preferences** → **Workflows**
 2. Select **Universal Converter**
-3. Double-click the **Script Filter** block you want to change
-4. Edit the **Keyword** field (e.g., change `c` to `conv`, or `ct` to `tz`)
+3. Double-click the **Script Filter** block you want to change (`c`, `ct`, or `cc`)
+4. Edit the **Keyword** field (e.g., change `c` to `conv`, `ct` to `tz`, `cc` to `cur`)
 5. Close — changes are saved automatically
 
 ## Project structure
@@ -135,6 +163,8 @@ Standard 3-letter ISO 4217 codes: `USD`, `EUR`, `GBP`, `JPY`, `KRW`, `CNY`, `CAD
 │   ├── main.py             # 'c' keyword — convert entry point
 │   ├── ct.py               # 'ct' keyword — timezone dashboard
 │   ├── ct_action.py        # Add/remove timezone action handler
+│   ├── cc.py               # 'cc' keyword — currency dashboard
+│   ├── cc_action.py        # Add/remove currency action handler
 │   └── converter/
 │       ├── data.py         # Timezone/city/country/currency data table
 │       ├── alfred.py       # Alfred JSON output helpers

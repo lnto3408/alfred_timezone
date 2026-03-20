@@ -1,48 +1,74 @@
-"""Manage favorite timezones for the ct command."""
+"""Manage favorites for ct (timezones) and cc (currencies)."""
 import json
 import os
 
-FAVORITES_PATH = os.path.expanduser("~/.config/alfred_converter/favorites.json")
+CONFIG_DIR = os.path.expanduser("~/.config/alfred_converter")
+TZ_PATH = os.path.join(CONFIG_DIR, "favorites.json")
+CURR_PATH = os.path.join(CONFIG_DIR, "currencies.json")
 
 
 def _ensure_dir():
-    os.makedirs(os.path.dirname(FAVORITES_PATH), exist_ok=True)
+    os.makedirs(CONFIG_DIR, exist_ok=True)
 
 
-def load():
-    """Load favorite IANA timezone list. Returns list of iana strings."""
-    if not os.path.exists(FAVORITES_PATH):
+def _load(path):
+    if not os.path.exists(path):
         return []
     try:
-        with open(FAVORITES_PATH, "r") as f:
+        with open(path, "r") as f:
             data = json.load(f)
         return data if isinstance(data, list) else []
     except (json.JSONDecodeError, OSError):
         return []
 
 
-def save(favorites):
-    """Save favorite IANA timezone list."""
+def _save(path, items):
     _ensure_dir()
-    with open(FAVORITES_PATH, "w") as f:
-        json.dump(favorites, f, indent=2)
+    with open(path, "w") as f:
+        json.dump(items, f, indent=2)
 
+
+def _add(path, item):
+    items = _load(path)
+    if item in items:
+        return False
+    items.append(item)
+    _save(path, items)
+    return True
+
+
+def _remove(path, item):
+    items = _load(path)
+    if item not in items:
+        return False
+    items.remove(item)
+    _save(path, items)
+    return True
+
+
+# Timezone favorites
+def load():
+    return _load(TZ_PATH)
+
+def save(favorites):
+    _save(TZ_PATH, favorites)
 
 def add(iana):
-    """Add a timezone to favorites. Returns True if added, False if already exists."""
-    favs = load()
-    if iana in favs:
-        return False
-    favs.append(iana)
-    save(favs)
-    return True
-
+    return _add(TZ_PATH, iana)
 
 def remove(iana):
-    """Remove a timezone from favorites. Returns True if removed."""
-    favs = load()
-    if iana not in favs:
-        return False
-    favs.remove(iana)
-    save(favs)
-    return True
+    return _remove(TZ_PATH, iana)
+
+
+# Currency favorites
+def load_currencies():
+    return _load(CURR_PATH)
+
+def save_currencies(currencies):
+    _save(CURR_PATH, currencies)
+
+def add_currency(code):
+    return _add(CURR_PATH, code.upper())
+
+def remove_currency(code):
+    return _remove(CURR_PATH, code.upper())
