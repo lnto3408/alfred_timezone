@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Alfred Script Filter: ct — timezone dashboard with favorites."""
+"""Alfred Script Filter: ct — timezone conversion + dashboard."""
 import os
 import re
 import sys
@@ -9,9 +9,13 @@ from zoneinfo import ZoneInfo
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from converter.alfred import output, make_item, make_error
-from converter.data import resolve_location, search_locations, format_location, LOCATIONS, _IDX
+from converter.data import resolve_location, search_locations, LOCATIONS, _IDX
 from converter import favorites
-from converter.timezone import parse_time, get_local_tz
+from converter.timezone import parse_time, get_local_tz, convert as tz_convert
+from converter.parser import parse, TimezoneQuery
+
+# Time pattern
+TIME_RE = re.compile(r'^(\d{1,2}(?::\d{2})?\s*(?:am|pm)|\d{1,2}:\d{2}|\d{4})$', re.IGNORECASE)
 
 
 def show_times(time_str=None):
@@ -41,7 +45,6 @@ def show_times(time_str=None):
     source_tz_name = source_dt.strftime("%Z")
     source_fmt = source_dt.strftime("%-I:%M %p")
 
-    # Header: local time
     items.append(make_item(
         f"{source_fmt} {source_tz_name}",
         f"Local time",
@@ -58,7 +61,6 @@ def show_times(time_str=None):
         target_fmt = target_dt.strftime("%-I:%M %p")
         target_tz_name = target_dt.strftime("%Z")
 
-        # Date difference
         date_note = ""
         if source_dt.date() != target_dt.date():
             diff = (target_dt.date() - source_dt.date()).days
@@ -100,8 +102,7 @@ def handle_add(search_query):
 
         title = f"{loc['city']}, {loc['country']} ({tz_abbrs})"
         if already:
-            subtitle = "✓ Already added"
-            items.append(make_item(title, subtitle, arg=f"__noop__{iana}", valid=False))
+            items.append(make_item(title, "✓ Already added", arg=f"__noop__{iana}", valid=False))
         else:
             subtitle = f"{loc['region']}  ·  {iana}  — Press Enter to add"
             items.append(make_item(title, subtitle, arg=f"__add__{iana}"))
@@ -126,11 +127,10 @@ def handle_remove(search_query):
 
         tz_abbrs = "/".join(loc["tz_abbrs"])
         title = f"{loc['city']}, {loc['country']} ({tz_abbrs})"
-        subtitle = f"Press Enter to remove"
-        items.append(make_item(title, subtitle, arg=f"__remove__{iana}"))
+        items.append(make_item(title, "Press Enter to remove", arg=f"__remove__{iana}"))
 
     if not items:
-        output([make_error(f"No matching timezone found", "Check your favorites")])
+        output([make_error("No matching timezone found", "Check your favorites")])
 
     output(items)
 
@@ -139,7 +139,7 @@ def main():
     query = sys.argv[1] if len(sys.argv) > 1 else ""
     query = query.strip()
 
-    # ct (no args) → show current time in all favorites
+    # ct → dashboard (current time)
     if not query:
         show_times()
 
@@ -147,24 +147,29 @@ def main():
 
     # ct add <search>
     if lower.startswith("add"):
-        search = query[3:].strip()
-        handle_add(search)
+        handle_add(query[3:].strip())
 
-    # ct remove <search> / ct rm <search>
+    # ct remove / ct rm
     if lower.startswith("remove") or lower.startswith("rm"):
         search = re.sub(r'^(remove|rm)\s*', '', query, flags=re.IGNORECASE).strip()
         handle_remove(search)
 
-    # ct <time> → show time in all favorites
-    # Check if query looks like a time
-    time_match = re.match(r'^(\d{1,2}(?::\d{2})?\s*(?:am|pm)|\d{1,2}:\d{2}|\d{4})\s*$', query, re.IGNORECASE)
+    # ct 12pm to pdt → single conversion
+    if " to " in lower or " in " in lower:
+        parsed = parse(query)
+        if isinstance(parsed, TimezoneQuery):
+            items = tz_convert(parsed.time_str, parsed.to_tz, parsed.from_tz)
+            output(items)
+
+    # ct 10am → dashboard with specific time
+    time_match = TIME_RE.match(query)
     if time_match:
         show_times(time_match.group(1))
 
-    # Fallback: try as time anyway, or show help
+    # Fallback
     output([make_item(
-        "ct — Timezone Dashboard",
-        "ct [time] | ct add [city/country/tz] | ct remove [name]",
+        "ct — Timezone",
+        "ct [time] | ct 12pm to pdt | ct add [city] | ct remove [name]",
         valid=False
     )])
 

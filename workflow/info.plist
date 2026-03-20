@@ -8,7 +8,7 @@
 	<string>Productivity</string>
 	<key>connections</key>
 	<dict>
-		<key>83AF2449-A489-4399-90CA-817A336C07CF</key>
+		<key>C88C3884-B1FD-4360-AF60-82D5A79F65B9</key>
 		<array>
 			<dict>
 				<key>destinationuid</key>
@@ -20,9 +20,6 @@
 				<key>vitoclose</key>
 				<false/>
 			</dict>
-		</array>
-		<key>C88C3884-B1FD-4360-AF60-82D5A79F65B9</key>
-		<array>
 			<dict>
 				<key>destinationuid</key>
 				<string>72BDDAF2-1CDB-4A1E-98AD-49CED1A7C1CF</string>
@@ -38,6 +35,16 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
+				<string>9EF028E6-0937-4E40-8095-CD889008ED82</string>
+				<key>modifiers</key>
+				<integer>0</integer>
+				<key>modifiersubtext</key>
+				<string></string>
+				<key>vitoclose</key>
+				<false/>
+			</dict>
+			<dict>
+				<key>destinationuid</key>
 				<string>589BBF1D-C40F-40AB-BDD8-E2A98716CB8A</string>
 				<key>modifiers</key>
 				<integer>0</integer>
@@ -51,62 +58,13 @@
 	<key>createdby</key>
 	<string></string>
 	<key>description</key>
-	<string>Timezone &amp; currency dashboards. c 12pm to pdt | ct 10am | cc 1000 | 1000 krw to usd</string>
+	<string>Timezone &amp; currency converter. ct 12pm to pdt | ct 10am | cc 1000 krw to usd | cc 5000</string>
 	<key>disabled</key>
 	<false/>
 	<key>name</key>
 	<string>Universal Converter</string>
 	<key>objects</key>
 	<array>
-		<dict>
-			<key>config</key>
-			<dict>
-				<key>alfredfiltersresults</key>
-				<false/>
-				<key>alfredfiltersresultsmatchmode</key>
-				<integer>0</integer>
-				<key>argumenttreatemptyqueryasnil</key>
-				<false/>
-				<key>argumenttrimmode</key>
-				<integer>0</integer>
-				<key>argumenttype</key>
-				<integer>0</integer>
-				<key>escaping</key>
-				<integer>102</integer>
-				<key>keyword</key>
-				<string>c</string>
-				<key>queuedelaycustom</key>
-				<integer>3</integer>
-				<key>queuedelayimmediatelyalinitially</key>
-				<true/>
-				<key>queuedelaymode</key>
-				<integer>0</integer>
-				<key>queuemode</key>
-				<integer>1</integer>
-				<key>runningsubtext</key>
-				<string>Converting...</string>
-				<key>script</key>
-				<string>/usr/bin/python3 convert.py "{query}"</string>
-				<key>scriptargtype</key>
-				<integer>0</integer>
-				<key>scriptfile</key>
-				<string></string>
-				<key>subtext</key>
-				<string>e.g., 12pm to pdt  |  1000 krw to usd</string>
-				<key>title</key>
-				<string>Convert</string>
-				<key>type</key>
-				<integer>0</integer>
-				<key>withspace</key>
-				<true/>
-			</dict>
-			<key>type</key>
-			<string>alfred.workflow.input.scriptfilter</string>
-			<key>uid</key>
-			<string>83AF2449-A489-4399-90CA-817A336C07CF</string>
-			<key>version</key>
-			<integer>3</integer>
-		</dict>
 		<dict>
 			<key>config</key>
 			<dict>
@@ -148,7 +106,7 @@
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string>Loading timezones...</string>
+				<string>Loading...</string>
 				<key>script</key>
 				<string>/usr/bin/python3 timezone_dashboard.py "{query}"</string>
 				<key>scriptargtype</key>
@@ -156,9 +114,9 @@
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
-				<string>ct [time] | ct add [city] | ct remove [city]</string>
+				<string>ct [time] | ct 12pm to pdt | ct add [city] | ct remove [city]</string>
 				<key>title</key>
-				<string>Timezone Dashboard</string>
+				<string>Timezone</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -220,7 +178,7 @@
 				<key>queuemode</key>
 				<integer>1</integer>
 				<key>runningsubtext</key>
-				<string>Loading rates...</string>
+				<string>Loading...</string>
 				<key>script</key>
 				<string>/usr/bin/python3 currency_dashboard.py "{query}"</string>
 				<key>scriptargtype</key>
@@ -228,9 +186,9 @@
 				<key>scriptfile</key>
 				<string></string>
 				<key>subtext</key>
-				<string>cc [amount] | cc add [currency] | cc remove [currency]</string>
+				<string>cc [amount] | cc 1000 krw to usd | cc add [currency] | cc remove [name]</string>
 				<key>title</key>
-				<string>Currency Dashboard</string>
+				<string>Currency</string>
 				<key>type</key>
 				<integer>0</integer>
 				<key>withspace</key>
@@ -270,72 +228,64 @@
 	<key>readme</key>
 	<string>Universal Converter for Alfred
 
-Keywords: c, ct, cc
+Keywords: ct, cc
 
-Convert (c):
-  c 12pm to pdt      — timezone conversion
-  c 1000 krw to usd  — currency conversion
+Timezone (ct):
+  ct                  — current time in saved timezones
+  ct 10am             — convert time to saved timezones
+  ct 12pm to pdt      — single timezone conversion
+  ct 3:30pm kst to est
+  ct add tokyo        — add a timezone
+  ct remove tokyo     — remove a timezone
 
-Timezone Dashboard (ct):
-  ct              — current time in saved timezones
-  ct 10am         — convert time to saved timezones
-  ct add tokyo    — add a timezone
-  ct remove tokyo — remove a timezone
-
-Currency Dashboard (cc):
-  cc              — rates for saved currencies
-  cc 1000         — convert amount to saved currencies
-  cc add usd      — add a currency
-  cc remove eur   — remove a currency
+Currency (cc):
+  cc                  — rates for saved currencies
+  cc 1000             — convert amount to saved currencies
+  cc 1000 krw to usd  — single currency conversion
+  cc add usd          — add a currency
+  cc remove eur       — remove a currency
 
 Press Enter to copy result or add/remove.</string>
 	<key>uidata</key>
 	<dict>
-		<key>83AF2449-A489-4399-90CA-817A336C07CF</key>
-		<dict>
-			<key>xpos</key>
-			<real>150</real>
-			<key>ypos</key>
-			<real>50</real>
-		</dict>
 		<key>9EF028E6-0937-4E40-8095-CD889008ED82</key>
 		<dict>
 			<key>xpos</key>
-			<real>450</real>
+			<real>600</real>
 			<key>ypos</key>
-			<real>50</real>
+			<real>150</real>
 		</dict>
 		<key>C88C3884-B1FD-4360-AF60-82D5A79F65B9</key>
 		<dict>
 			<key>xpos</key>
 			<real>150</real>
 			<key>ypos</key>
-			<real>250</real>
+			<real>50</real>
 		</dict>
 		<key>72BDDAF2-1CDB-4A1E-98AD-49CED1A7C1CF</key>
 		<dict>
 			<key>xpos</key>
-			<real>450</real>
+			<real>400</real>
 			<key>ypos</key>
-			<real>250</real>
+			<real>50</real>
 		</dict>
 		<key>523D4BCE-F92F-4463-8C59-1F7F170CA4F2</key>
 		<dict>
 			<key>xpos</key>
 			<real>150</real>
 			<key>ypos</key>
-			<real>450</real>
+			<real>250</real>
 		</dict>
 		<key>589BBF1D-C40F-40AB-BDD8-E2A98716CB8A</key>
 		<dict>
 			<key>xpos</key>
-			<real>450</real>
+			<real>400</real>
 			<key>ypos</key>
-			<real>450</real>
+			<real>250</real>
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>2.0.0</string>
+	<string>3.0.0</string>
 	<key>webaddress</key>
 	<string></string>
 </dict>

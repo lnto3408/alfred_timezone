@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Alfred Script Filter: cc — currency dashboard with favorites."""
+"""Alfred Script Filter: cc — currency conversion + dashboard."""
 import os
 import re
 import sys
@@ -9,7 +9,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from converter.alfred import output, make_item, make_error
 from converter.data import resolve_location, search_locations, CURRENCIES, _IDX, ZERO_DECIMAL_CURRENCIES
 from converter import favorites
-from converter.currency import get_rates, format_amount
+from converter.currency import get_rates, format_amount, convert as curr_convert
+from converter.parser import parse, CurrencyQuery
 
 
 def _get_local_currency():
@@ -53,7 +54,6 @@ def show_rates(amount_str=None):
         except ValueError:
             output([make_error(f"Invalid amount: {amount_str}")])
     else:
-        # Default to a meaningful amount based on currency magnitude
         high_unit = {"KRW", "JPY", "VND", "IDR", "CLP", "COP", "HUF"}
         amount = 10000.0 if local_curr in high_unit else 100.0
 
@@ -65,7 +65,6 @@ def show_rates(amount_str=None):
     amount_formatted = format_amount(amount, local_curr)
     stale_note = "  (cached)" if is_stale else ""
 
-    # Header: local currency
     items.append(make_item(
         f"{amount_formatted} {local_curr}",
         f"{_currency_name(local_curr)}  (base){stale_note}",
@@ -108,7 +107,6 @@ def handle_add(search_query):
     items = []
     seen = set()
 
-    # Search currencies by code, name, aliases
     for curr in CURRENCIES:
         code = curr["code"]
         if code in seen:
@@ -126,7 +124,6 @@ def handle_add(search_query):
                     break
 
         if not match:
-            # Also search locations by country/city
             loc = _IDX["currency"].get(code)
             if loc:
                 searchable = f"{loc['city']} {loc['country']} {' '.join(loc.get('aliases', []))}".lower()
@@ -167,7 +164,7 @@ def handle_remove(search_query):
         items.append(make_item(title, "Press Enter to remove", arg=f"__remove__{code}"))
 
     if not items:
-        output([make_error(f"No matching currency found")])
+        output([make_error("No matching currency found")])
 
     output(items)
 
@@ -176,26 +173,37 @@ def main():
     query = sys.argv[1] if len(sys.argv) > 1 else ""
     query = query.strip()
 
+    # cc → dashboard (default amount)
     if not query:
         show_rates()
 
     lower = query.lower()
 
+    # cc add <search>
     if lower.startswith("add"):
         handle_add(query[3:].strip())
 
+    # cc remove / cc rm
     if lower.startswith("remove") or lower.startswith("rm"):
         search = re.sub(r'^(remove|rm)\s*', '', query, flags=re.IGNORECASE).strip()
         handle_remove(search)
 
-    # Check if query is a number (amount)
+    # cc 1000 krw to usd → single conversion
+    if " to " in lower or " in " in lower:
+        parsed = parse(query)
+        if isinstance(parsed, CurrencyQuery):
+            items = curr_convert(parsed.amount, parsed.from_curr, parsed.to_curr)
+            output(items)
+
+    # cc 1000 → dashboard with amount
     amount_match = re.match(r'^[\d,]+\.?\d*$', query)
     if amount_match:
         show_rates(query)
 
+    # Fallback
     output([make_item(
-        "cc — Currency Dashboard",
-        "cc [amount] | cc add [currency] | cc remove [currency]",
+        "cc — Currency",
+        "cc [amount] | cc 1000 krw to usd | cc add [currency] | cc remove [name]",
         valid=False
     )])
 

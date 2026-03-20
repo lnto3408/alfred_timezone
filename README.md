@@ -1,6 +1,6 @@
 # Universal Converter for Alfred
 
-Timezone dashboard & instant converter for Alfred — timezone conversion, currency conversion, and a multi-timezone clock, all from the Alfred search bar.
+Timezone and currency converter for Alfred — dashboard, conversion, and favorites management from the search bar.
 
 ![timezone](https://img.shields.io/badge/timezone-DST%20aware-blue)
 ![currency](https://img.shields.io/badge/currency-160%2B%20codes-green)
@@ -26,106 +26,56 @@ chmod +x build.sh
 
 ## Usage
 
-Three keywords: **`c`** for quick conversions, **`ct`** for the timezone dashboard, **`cc`** for the currency dashboard.
+Two keywords: **`ct`** for timezone, **`cc`** for currency.
 
-> **Tip:** Both keywords can be changed to anything you prefer — see [Customizing keywords](#customizing-keywords).
-
----
-
-### `c` — Convert
-
-Quick timezone and currency conversions.
-
-#### Timezone
-
-| Input | Output |
-|---|---|
-| `c 12pm to pdt` | 8:00 PM PDT (previous day) |
-| `c 3:30pm to est` | 2:30 AM EDT |
-| `c 9am kst to pdt` | 5:00 PM PDT (previous day) |
-| `c 15:00 to tokyo` | 3:00 PM JST |
-| `c 12pm to utc` | 3:00 AM UTC |
-
-- Source timezone defaults to your **system's local timezone** when omitted
-- Shows date context when day changes (e.g., "previous day", "next day")
-- Time formats: `12pm`, `3:30pm`, `15:00`, `0930`
-
-#### Currency
-
-| Input | Output |
-|---|---|
-| `c 1000 krw to usd` | 0.67 USD |
-| `c 50 eur to jpy` | 9,135 JPY |
-| `c 100 usd to gbp` | 79.42 GBP |
-
-- 160+ currency codes (ISO 4217)
-- Exchange rates from [open.er-api.com](https://open.er-api.com) — free, no API key
-- Rates cached for 1 hour at `~/.cache/alfred_converter/`
-- Stale cache used as fallback when offline
-
-**Press Enter** to copy the result to clipboard.
+> **Tip:** Keywords can be changed — see [Customizing keywords](#customizing-keywords).
 
 ---
 
-### `ct` — Timezone Dashboard
+### `ct` — Timezone
 
-Save your frequently-used timezones and see them all at a glance.
-
-#### View current time across saved timezones
+Dashboard + conversion + favorites, all in one.
 
 | Input | Result |
 |---|---|
 | `ct` | Current time in all saved timezones |
-| `ct 10am` | 10:00 AM (local) converted to all saved timezones |
-| `ct 3:30pm` | 3:30 PM (local) converted to all saved timezones |
+| `ct 10am` | 10:00 AM (local) → all saved timezones |
+| `ct 12pm to pdt` | Single conversion: 12:00 PM local → PDT |
+| `ct 3:30pm kst to est` | Single conversion with source timezone |
+| `ct 15:00 to tokyo` | City name as target |
+| `ct add tokyo` | Add timezone by city/country/abbreviation |
+| `ct add pdt` | Add by timezone abbreviation |
+| `ct add korea` | Add by country |
+| `ct remove tokyo` | Remove timezone |
+| `ct rm london` | Remove (short form) |
 
-#### Add / remove timezones
-
-| Input | Result |
-|---|---|
-| `ct add tokyo` | Search & add Tokyo (JST) |
-| `ct add pdt` | Search & add by timezone abbreviation |
-| `ct add korea` | Search & add by country name |
-| `ct remove tokyo` | Remove Tokyo from dashboard |
-| `ct rm london` | Remove London from dashboard |
-
-Saved timezones are stored at `~/.config/alfred_converter/favorites.json`.
+Saved timezones: `~/.config/alfred_converter/favorites.json`
 
 ---
 
-### `cc` — Currency Dashboard
+### `cc` — Currency
 
-Save your frequently-used currencies and compare rates at a glance.
-
-#### View rates for saved currencies
+Dashboard + conversion + favorites, all in one.
 
 | Input | Result |
 |---|---|
-| `cc` | 1 unit of local currency → all saved currencies |
-| `cc 1000` | 1,000 local currency → all saved currencies |
-| `cc 50000` | 50,000 local currency → all saved currencies |
+| `cc` | Default amount → all saved currencies |
+| `cc 5000` | 5,000 local currency → all saved currencies |
+| `cc 1000 krw to usd` | Single conversion: 1,000 KRW → USD |
+| `cc 50 eur to jpy` | Single conversion: 50 EUR → JPY |
+| `cc add usd` | Add currency by code |
+| `cc add yen` | Add by alias |
+| `cc add euro` | Add by name |
+| `cc remove jpy` | Remove currency |
+| `cc rm eur` | Remove (short form) |
 
-Your **local currency is auto-detected** from your system timezone (e.g., KRW for Asia/Seoul).
-
-#### Add / remove currencies
-
-| Input | Result |
-|---|---|
-| `cc add usd` | Add US Dollar |
-| `cc add yen` | Search by alias → add JPY |
-| `cc add euro` | Search by name → add EUR |
-| `cc remove jpy` | Remove Japanese Yen |
-| `cc rm eur` | Remove Euro |
-
-Saved currencies are stored at `~/.config/alfred_converter/currencies.json`.
+Local currency auto-detected from system timezone. Saved currencies: `~/.config/alfred_converter/currencies.json`
 
 ---
 
 ### Supported formats
 
 #### Timezone identifiers
-
-You can use any of the following to specify a timezone:
 
 | Type | Examples |
 |---|---|
@@ -147,32 +97,34 @@ You can use any of the following to specify a timezone:
 
 Standard 3-letter ISO 4217 codes: `USD`, `EUR`, `GBP`, `JPY`, `KRW`, `CNY`, `CAD`, `AUD`, `CHF`, `SGD`, `HKD`, `TWD`, `THB`, `INR`, `BRL`, `MXN`, `ZAR`, `AED`, `SEK`, `NOK`, `DKK`, `PLN`, `CZK`, `TRY`, `RUB`, and [160+ more](https://open.er-api.com/v6/latest/USD).
 
+Exchange rates from [open.er-api.com](https://open.er-api.com) — free, no API key. Cached 1 hour at `~/.cache/alfred_converter/`.
+
 ## Customizing keywords
 
 1. Open **Alfred Preferences** → **Workflows**
 2. Select **Universal Converter**
-3. Double-click the **Script Filter** block you want to change (`c`, `ct`, or `cc`)
-4. Edit the **Keyword** field (e.g., change `c` to `conv`, `ct` to `tz`, `cc` to `cur`)
+3. Double-click the **Script Filter** block you want to change (`ct` or `cc`)
+4. Edit the **Keyword** field
 5. Close — changes are saved automatically
 
 ## Project structure
 
 ```
-├── workflow/               # Alfred workflow source
-│   ├── info.plist          # Alfred workflow manifest
-│   ├── convert.py              # 'c' — quick conversion entry point
-│   ├── timezone_dashboard.py   # 'ct' — timezone dashboard
+├── workflow/
+│   ├── info.plist              # Alfred workflow manifest
+│   ├── icon.png                # Workflow icon
+│   ├── timezone_dashboard.py   # 'ct' — timezone dashboard + conversion
 │   ├── timezone_action.py      # ct add/remove handler
-│   ├── currency_dashboard.py   # 'cc' — currency dashboard
+│   ├── currency_dashboard.py   # 'cc' — currency dashboard + conversion
 │   ├── currency_action.py      # cc add/remove handler
 │   └── converter/
-│       ├── data.py         # Timezone/city/country/currency data table
-│       ├── alfred.py       # Alfred JSON output helpers
-│       ├── parser.py       # Query parsing & routing
-│       ├── timezone.py     # Timezone conversion (zoneinfo)
-│       ├── currency.py     # Currency conversion + caching
-│       └── favorites.py    # Saved timezone management
-├── build.sh                # Package into .alfredworkflow
+│       ├── data.py             # Timezone/city/country/currency data table
+│       ├── alfred.py           # Alfred JSON output helpers
+│       ├── parser.py           # Query parsing & routing
+│       ├── timezone.py         # Timezone conversion (zoneinfo)
+│       ├── currency.py         # Currency conversion + caching
+│       └── favorites.py        # Saved timezone/currency management
+├── build.sh
 ├── LICENSE
 └── README.md
 ```
