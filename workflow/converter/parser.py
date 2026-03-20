@@ -3,6 +3,7 @@ import re
 from collections import namedtuple
 
 from converter.data import resolve_location, _IDX
+from converter.timezone import resolve_offset_tz, OFFSET_RE
 
 TimezoneQuery = namedtuple("TimezoneQuery", ["time_str", "from_tz", "to_tz"])
 CurrencyQuery = namedtuple("CurrencyQuery", ["amount", "from_curr", "to_curr"])
@@ -15,8 +16,14 @@ TIME_PATTERN = re.compile(
 
 
 def _is_tz(name):
-    """Check if a name resolves to a known timezone."""
-    return resolve_location(name) is not None or "/" in name or name.upper() == "UTC"
+    """Check if a name resolves to a known timezone (including UTC/GMT offsets)."""
+    if resolve_location(name) is not None:
+        return True
+    if "/" in name:
+        return True
+    if OFFSET_RE.match(name.strip()):
+        return True
+    return False
 
 
 def parse(query):
@@ -51,11 +58,11 @@ def _try_timezone(left, right):
     if not _is_tz(right):
         return None
 
-    # "12pm to pdt"
+    # "12pm to pdt" / "12pm to utc+9"
     if TIME_PATTERN.match(left):
         return TimezoneQuery(time_str=left, from_tz=None, to_tz=right)
 
-    # "12pm kst to pdt"
+    # "12pm kst to pdt" / "12pm utc+9 to pdt"
     left_parts = left.rsplit(None, 1)
     if len(left_parts) == 2:
         time_part, tz_part = left_parts
